@@ -110,7 +110,7 @@
         min-height: 20px;
     }
 
-    /* Off-screen capture card: full phone-screen canvas, branded card centered inside */
+    /* Off-screen capture card: full phone-screen canvas, content vertically centered */
     #captureCard {
         position: fixed;
         top: -9999px;
@@ -118,7 +118,10 @@
         width: 390px;
         height: 844px;
         background: #ffffff;
-        padding: 56px 26px 26px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 26px;
         font-family: Arial, sans-serif;
     }
     #captureCard .cc-header {
