@@ -41,7 +41,7 @@
         padding: 16px;
         max-width: 420px;
         margin: 0 auto 14px;
-        text-align: left;
+        text-align: center;
     }
     .card label {
         display: block;
@@ -63,6 +63,8 @@
         border-radius: 6px;
         border: 1px solid #ccc;
         background: #fff;
+        text-align: center;
+        text-align-last: center;
     }
     .toggle-row {
         display: flex;
@@ -107,60 +109,32 @@
         color: #555;
         min-height: 20px;
     }
+
     #captureCard {
         position: fixed;
         top: -9999px;
         left: -9999px;
-        width: 640px;
-        background: #ffffff;
-        padding: 32px;
+        width: 360px;
+        background: #f9f9f9;
+        padding: 28px 20px;
         font-family: Arial, sans-serif;
+        text-align: center;
     }
-    #captureCard .cc-header {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        border-bottom: 3px solid var(--brand-blue);
-        padding-bottom: 16px;
-        margin-bottom: 20px;
-    }
-    #captureCard .cc-header img {
-        width: 60px;
-    }
-    #captureCard .cc-header h2 {
-        margin: 0;
+    #captureCard h1 {
+        font-size: 26px;
         color: var(--brand-blue);
-        font-size: 22px;
+        margin: 0 0 20px;
     }
-    #captureCard .cc-header span {
-        color: var(--brand-dark);
-        font-size: 13px;
-    }
-    #captureCard .cc-badge {
-        display: inline-block;
-        padding: 6px 16px;
-        border-radius: 20px;
-        background: var(--brand-blue);
-        color: #fff;
-        font-weight: bold;
-        font-size: 14px;
-        margin-bottom: 18px;
-    }
-    #captureCard .cc-row {
-        margin-bottom: 14px;
-    }
-    #captureCard .cc-row label {
-        display: block;
-        font-size: 11px;
-        text-transform: uppercase;
-        color: #888;
-        letter-spacing: 0.04em;
-        margin-bottom: 3px;
-    }
-    #captureCard .cc-row .cc-value {
-        font-size: 18px;
+    #captureCard .cc-box {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 14px;
+        margin: 0 auto 14px;
+        width: 88%;
+        font-size: 15px;
         color: #222;
-        font-weight: bold;
+        word-wrap: break-word;
     }
 </style>
 </head>
@@ -216,26 +190,11 @@
 <div id="status"></div>
 
 <div id="captureCard">
-    <div class="cc-header">
-        <img src="logo.png" alt="Micronet">
-        <div>
-            <h2>MIC Attendance Record</h2>
-            <span>Micronet International College</span>
-        </div>
-    </div>
-    <div class="cc-badge" id="cc-type">TIME IN</div>
-    <div class="cc-row">
-        <label>Staff Name</label>
-        <div class="cc-value" id="cc-name">-</div>
-    </div>
-    <div class="cc-row">
-        <label>Date &amp; Time</label>
-        <div class="cc-value" id="cc-datetime">-</div>
-    </div>
-    <div class="cc-row">
-        <label>Location</label>
-        <div class="cc-value" id="cc-location" style="font-weight:normal; font-size:15px;">-</div>
-    </div>
+    <h1>MIC Attendance</h1>
+    <div class="cc-box" id="cc-name">Staff Name: -</div>
+    <div class="cc-box" id="cc-type">Type: -</div>
+    <div class="cc-box" id="cc-datetime">Date: - | Time: -</div>
+    <div class="cc-box" id="cc-location">Location: -</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -339,10 +298,10 @@
         const dateStr = now.toLocaleDateString();
         const timeStr = now.toLocaleTimeString();
 
-        document.getElementById('cc-type').textContent = recordType.toUpperCase();
-        document.getElementById('cc-name').textContent = name;
-        document.getElementById('cc-datetime').textContent = `${dateStr} | ${timeStr}`;
-        document.getElementById('cc-location').textContent = currentAddress;
+        document.getElementById('cc-name').textContent = `Staff Name: ${name}`;
+        document.getElementById('cc-type').textContent = `Type: ${recordType}`;
+        document.getElementById('cc-datetime').textContent = `Date: ${dateStr} | Time: ${timeStr}`;
+        document.getElementById('cc-location').textContent = `Location: ${currentAddress}`;
 
         logToSheet({
             name: name,
@@ -356,7 +315,7 @@
 
         try {
             const canvas = await html2canvas(document.getElementById('captureCard'), {
-                backgroundColor: '#ffffff',
+                backgroundColor: '#f9f9f9',
                 scale: 2
             });
 
@@ -367,9 +326,7 @@
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
-                            files: [file],
-                            title: 'MIC Attendance',
-                            text: `${recordType} - ${name} - ${dateStr} ${timeStr}`
+                            files: [file]
                         });
                         statusEl.textContent = "Share sheet opened — pick \"MIC Punch in Record\" to send.";
                     } catch (shareErr) {
