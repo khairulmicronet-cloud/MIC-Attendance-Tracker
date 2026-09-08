@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>MIC Attendance - V1</title>
+<style>
+    :root {
+        --brand-green: #4CAF50;
+        --brand-dark: #333;
+        --bg: #f9f9f9;
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: var(--bg);
+        color: #222;
+        margin: 0;
+        padding: 20px 16px 40px;
+        min-height: 100vh;
+    }
+    h1 {
+        font-size: 24px;
+        color: var(--brand-green);
+        margin: 20px 0 20px;
+    }
+    .card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        padding: 15px;
+        max-width: 400px;
+        margin: 0 auto 14px;
+        text-align: center;
+    }
+    .card label {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #888;
+        margin-bottom: 6px;
+    }
+    .card .value {
+        font-size: 17px;
+        color: #222;
+        word-wrap: break-word;
+    }
+    select#staffName {
+        width: 100%;
+        font-size: 16px;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background: #fff;
+        text-align: center;
+        text-align-last: center;
+    }
+    .toggle-row {
+        display: flex;
+        gap: 10px;
+        max-width: 400px;
+        margin: 0 auto 14px;
+    }
+    .toggle-btn {
+        flex: 1;
+        padding: 12px 0;
+        border-radius: 6px;
+        border: 2px solid var(--brand-green);
+        background: #fff;
+        color: var(--brand-green);
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .toggle-btn.active {
+        background: var(--brand-green);
+        color: #fff;
+    }
+    #submitBtn {
+        width: 100%;
+        max-width: 400px;
+        padding: 15px;
+        font-size: 17px;
+        font-weight: bold;
+        color: #fff;
+        background: var(--brand-green);
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 6px;
+    }
+    #submitBtn:disabled {
+        opacity: 0.6;
+    }
+    #status {
+        margin-top: 14px;
+        font-size: 14px;
+        color: #555;
+        min-height: 20px;
+    }
+
+    /* Off-screen capture card: full phone-screen canvas, plain classic style */
+    #captureCard {
+        position: fixed;
+        top: -9999px;
+        left: -9999px;
+        width: 390px;
+        height: 844px;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 26px;
+        font-family: Arial, sans-serif;
+    }
+    #captureCard h1 {
+        font-size: 26px;
+        color: var(--brand-green);
+        margin: 0 0 24px;
+    }
+    #captureCard .cc-row {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    #captureCard .cc-row:last-child {
+        margin-bottom: 0;
+    }
+    #captureCard .cc-row label {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        color: #888;
+        letter-spacing: 0.04em;
+        margin-bottom: 6px;
+    }
+    #captureCard .cc-row .cc-value {
+        font-size: 18px;
+        color: #222;
+        font-weight: bold;
+        word-wrap: break-word;
+        line-height: 1.5;
+    }
+</style>
+</head>
+<body>
+
+<h1>MIC Attendance</h1>
+<div style="font-size:12px;color:#999;margin-top:-14px;margin-bottom:18px;">Version 1 (Classic Layout)</div>
+
+<div class="card">
+    <label>Staff Name</label>
+    <select id="staffName">
+        <option value="" disabled selected>Select your name</option>
+        <option>Sharon Chin</option>
+        <option>Crisanta Dionglay</option>
+        <option>Hajah Nur'Aqilah</option>
+        <option>Norain Hj Matussin</option>
+        <option>Maziyyah</option>
+        <option>Alisha Abdul Latip</option>
+        <option>Aslam Mohd Rajmi</option>
+        <option>Lyana Berawoh</option>
+        <option>Amal Rafidah Hj Hamzah</option>
+        <option>Sheraden Sanchez</option>
+        <option>Nurlizam Pungut/Ismail</option>
+        <option>Awangku Muhammad Khairul Amir Bin Pg Darma Putra</option>
+        <option>Dk Hjh Ummi</option>
+        <option>Veronica Anne Roddy</option>
+        <option>Md Hariz Mahyuddin</option>
+        <option>Nur Izzaty</option>
+        <option>Azimah Md Hishamuddin</option>
+        <option>Nurkhtamal Alinafiah</option>
+        <option>Nurzahidah Haji Sahari</option>
+        <option>Nur Amelea Batrisyia Suhaili</option>
+        <option>Muhammad Mustadim Hj Mohd Lias</option>
+    </select>
+</div>
+
+<div class="card">
+    <label>Date &amp; Time</label>
+    <div class="value" id="datetime">Loading date and time...</div>
+</div>
+
+<div class="card">
+    <label>Location</label>
+    <div class="value" id="location">Fetching location...</div>
+</div>
+
+<div class="toggle-row">
+    <button type="button" class="toggle-btn active" id="btnTimeIn">Time In</button>
+    <button type="button" class="toggle-btn" id="btnTimeOut">Time Out</button>
+</div>
+
+<button id="submitBtn">Submit Attendance</button>
+<div id="status"></div>
+
+<!-- Hidden card rendered into the shared screenshot: full phone-screen canvas -->
+<div id="captureCard">
+    <h1>MIC Attendance</h1>
+    <div class="cc-row">
+        <label>Staff Name</label>
+        <div class="cc-value" id="cc-name">-</div>
+    </div>
+    <div class="cc-row">
+        <label id="cc-type-label">Type</label>
+        <div class="cc-value" id="cc-type">-</div>
+    </div>
+    <div class="cc-row">
+        <label>Date &amp; Time</label>
+        <div class="cc-value" id="cc-datetime">-</div>
+    </div>
+    <div class="cc-row">
+        <label>Location</label>
+        <div class="cc-value" id="cc-location" style="font-weight:normal; font-size:15px;">-</div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+    // ====== CONFIG: paste your deployed Apps Script Web App URL here ======
+    const APPS_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+    // =========================================================================
+
+    let currentLat = null, currentLon = null, currentAddress = "Fetching location...";
+    let recordType = "Time In";
+
+    function updateDateTime() {
+        const now = new Date();
+        document.getElementById('datetime').textContent =
+            `${now.toLocaleDateString()} | ${now.toLocaleTimeString()}`;
+    }
+
+    function showPosition(position) {
+        currentLat = position.coords.latitude;
+        currentLon = position.coords.longitude;
+
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLat}&lon=${currentLon}`)
+            .then(r => r.json())
+            .then(data => {
+                currentAddress = data.display_name || "Location name not available";
+                document.getElementById('location').textContent = currentAddress;
+            })
+            .catch(() => {
+                currentAddress = "Unable to fetch location name.";
+                document.getElementById('location').textContent = currentAddress;
+            });
+    }
+
+    function showError(error) {
+        const messages = {
+            1: "Location permission denied. Please enable location access.",
+            2: "Location information is unavailable.",
+            3: "The request to get your location timed out."
+        };
+        document.getElementById('location').textContent = messages[error.code] || "An unknown location error occurred.";
+    }
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError, {
+                enableHighAccuracy: true,
+                timeout: 15000
+            });
+        } else {
+            document.getElementById('location').textContent = "Geolocation is not supported by this browser.";
+        }
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+    getLocation();
+
+    // Time In / Time Out toggle
+    const btnIn = document.getElementById('btnTimeIn');
+    const btnOut = document.getElementById('btnTimeOut');
+    btnIn.addEventListener('click', () => {
+        recordType = "Time In";
+        btnIn.classList.add('active');
+        btnOut.classList.remove('active');
+    });
+    btnOut.addEventListener('click', () => {
+        recordType = "Time Out";
+        btnOut.classList.add('active');
+        btnIn.classList.remove('active');
+    });
+
+    async function logToSheet(payload) {
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("PASTE_") === 0) return; // not configured yet
+        try {
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+        } catch (err) {
+            console.error('Sheet log failed:', err);
+        }
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+        const name = document.getElementById('staffName').value;
+        const statusEl = document.getElementById('status');
+
+        if (!name) {
+            statusEl.textContent = "Please select your name first.";
+            return;
+        }
+        if (currentLat === null) {
+            statusEl.textContent = "Still fetching your location — please wait a moment and try again.";
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        statusEl.textContent = "Preparing your submission...";
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString();
+        const timeStr = now.toLocaleTimeString();
+
+        // Fill the hidden capture card
+        document.getElementById('cc-name').textContent = name;
+        document.getElementById('cc-type').textContent = recordType;
+        document.getElementById('cc-datetime').textContent = `${dateStr} | ${timeStr}`;
+        document.getElementById('cc-location').textContent = currentAddress;
+
+        // Fire-and-forget log to Google Sheet
+        logToSheet({
+            name: name,
+            type: recordType,
+            date: dateStr,
+            time: timeStr,
+            address: currentAddress,
+            lat: currentLat,
+            lon: currentLon
+        });
+
+        try {
+            const canvas = await html2canvas(document.getElementById('captureCard'), {
+                backgroundColor: '#ffffff',
+                scale: 2
+            });
+
+            canvas.toBlob(async (blob) => {
+                const fileName = `MIC-${recordType.replace(' ', '')}-${name.split(' ')[0]}-${Date.now()}.png`;
+                const file = new File([blob], fileName, { type: 'image/png' });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file]
+                        });
+                        statusEl.textContent = "Share sheet opened — pick \"MIC Punch in Record\" to send.";
+                    } catch (shareErr) {
+                        statusEl.textContent = "Share cancelled.";
+                    }
+                } else {
+                    // Fallback for browsers/desktops without file-sharing support
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.click();
+                    statusEl.textContent = "Image downloaded — please attach it manually to the \"MIC Punch in Record\" WhatsApp group.";
+                }
+                submitBtn.disabled = false;
+            }, 'image/png');
+        } catch (err) {
+            console.error(err);
+            statusEl.textContent = "Something went wrong generating the image. Please try again.";
+            submitBtn.disabled = false;
+        }
+    });
+
+    // Register service worker for installability/offline shell
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        });
+    }
+</script>
+
+</body>
+</html>
