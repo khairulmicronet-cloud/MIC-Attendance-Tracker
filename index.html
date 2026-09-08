@@ -110,26 +110,16 @@
         min-height: 20px;
     }
 
+    /* Off-screen capture card: full phone-screen canvas, branded card centered inside */
     #captureCard {
         position: fixed;
         top: -9999px;
         left: -9999px;
         width: 390px;
         height: 844px;
-        background: var(--bg);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 10px;
+        background: #ffffff;
+        padding: 56px 26px 26px;
         font-family: Arial, sans-serif;
-    }
-    #captureCard .cc-inner {
-        width: 100%;
-        background: #fff;
-        border-radius: 14px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-        padding: 28px 22px;
     }
     #captureCard .cc-header {
         display: flex;
@@ -233,34 +223,35 @@
 <button id="submitBtn">Submit Attendance</button>
 <div id="status"></div>
 
+<!-- Hidden card rendered into the shared screenshot: full phone-screen canvas -->
 <div id="captureCard">
-    <div class="cc-inner">
-        <div class="cc-header">
-            <img src="logo.png" alt="Micronet">
-            <div>
-                <h2>MIC Attendance Record</h2>
-                <span>Micronet International College</span>
-            </div>
+    <div class="cc-header">
+        <img src="logo.png" alt="Micronet">
+        <div>
+            <h2>MIC Attendance Record</h2>
+            <span>Micronet International College</span>
         </div>
-        <div class="cc-badge" id="cc-type">TIME IN</div>
-        <div class="cc-row">
-            <label>Staff Name</label>
-            <div class="cc-value" id="cc-name">-</div>
-        </div>
-        <div class="cc-row">
-            <label>Date &amp; Time</label>
-            <div class="cc-value" id="cc-datetime">-</div>
-        </div>
-        <div class="cc-row">
-            <label>Location</label>
-            <div class="cc-value" id="cc-location" style="font-weight:normal; font-size:15px;">-</div>
-        </div>
+    </div>
+    <div class="cc-badge" id="cc-type">TIME IN</div>
+    <div class="cc-row">
+        <label>Staff Name</label>
+        <div class="cc-value" id="cc-name">-</div>
+    </div>
+    <div class="cc-row">
+        <label>Date &amp; Time</label>
+        <div class="cc-value" id="cc-datetime">-</div>
+    </div>
+    <div class="cc-row">
+        <label>Location</label>
+        <div class="cc-value" id="cc-location" style="font-weight:normal; font-size:15px;">-</div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
+    // ====== CONFIG: paste your deployed Apps Script Web App URL here ======
     const APPS_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+    // =========================================================================
 
     let currentLat = null, currentLon = null, currentAddress = "Fetching location...";
     let recordType = "Time In";
@@ -311,6 +302,7 @@
     updateDateTime();
     getLocation();
 
+    // Time In / Time Out toggle
     const btnIn = document.getElementById('btnTimeIn');
     const btnOut = document.getElementById('btnTimeOut');
     btnIn.addEventListener('click', () => {
@@ -325,7 +317,7 @@
     });
 
     async function logToSheet(payload) {
-        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("PASTE_") === 0) return;
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("PASTE_") === 0) return; // not configured yet
         try {
             await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
@@ -359,11 +351,13 @@
         const dateStr = now.toLocaleDateString();
         const timeStr = now.toLocaleTimeString();
 
+        // Fill the hidden capture card
         document.getElementById('cc-type').textContent = recordType.toUpperCase();
         document.getElementById('cc-name').textContent = name;
         document.getElementById('cc-datetime').textContent = `${dateStr} | ${timeStr}`;
         document.getElementById('cc-location').textContent = currentAddress;
 
+        // Fire-and-forget log to Google Sheet
         logToSheet({
             name: name,
             type: recordType,
@@ -376,7 +370,7 @@
 
         try {
             const canvas = await html2canvas(document.getElementById('captureCard'), {
-                backgroundColor: '#f4f5f7',
+                backgroundColor: '#ffffff',
                 scale: 2
             });
 
@@ -394,6 +388,7 @@
                         statusEl.textContent = "Share cancelled.";
                     }
                 } else {
+                    // Fallback for browsers/desktops without file-sharing support
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -410,6 +405,7 @@
         }
     });
 
+    // Register service worker for installability/offline shell
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js').catch(() => {});
