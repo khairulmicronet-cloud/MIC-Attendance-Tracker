@@ -99,6 +99,22 @@
     #submitBtn:disabled {
         opacity: 0.6;
     }
+    #submitRecordBtn {
+        width: 100%;
+        max-width: 400px;
+        padding: 13px;
+        font-size: 15px;
+        font-weight: bold;
+        color: var(--brand-green);
+        background: #fff;
+        border: 2px solid var(--brand-green);
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    #submitRecordBtn:disabled {
+        opacity: 0.6;
+    }
     #status {
         margin-top: 14px;
         font-size: 14px;
@@ -193,13 +209,12 @@
 </div>
 
 <button id="submitBtn">Submit Attendance</button>
+<button id="submitRecordBtn">Submit Record (Name &amp; Type)</button>
 <div id="status"></div>
 
-<!-- Hidden card rendered into the shared screenshot: matches the original page exactly -->
+<!-- Hidden card rendered into the shared screenshot: matches the original page exactly (Date/Time + Location only) -->
 <div id="captureCard">
     <h1>MIC Attendance</h1>
-    <div class="cc-box" id="cc-name">Staff Name: -</div>
-    <div class="cc-box" id="cc-type">Type: -</div>
     <div class="cc-box" id="cc-datetime">Date: - | Time: -</div>
     <div class="cc-box" id="cc-location">Location: -</div>
 </div>
@@ -274,7 +289,9 @@
     });
 
     async function logToSheet(payload) {
-        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("PASTE_") === 0) return; // not configured yet
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("PASTE_") === 0) {
+            return { ok: false, reason: "not_configured" };
+        }
         try {
             await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
@@ -282,19 +299,16 @@
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
             });
+            return { ok: true };
         } catch (err) {
             console.error('Sheet log failed:', err);
+            return { ok: false, reason: "network_error" };
         }
     }
 
     document.getElementById('submitBtn').addEventListener('click', async () => {
-        const name = document.getElementById('staffName').value;
         const statusEl = document.getElementById('status');
 
-        if (!name) {
-            statusEl.textContent = "Please select your name first.";
-            return;
-        }
         if (currentLat === null) {
             statusEl.textContent = "Still fetching your location — please wait a moment and try again.";
             return;
@@ -302,28 +316,15 @@
 
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
-        statusEl.textContent = "Preparing your submission...";
+        statusEl.textContent = "Preparing your screenshot...";
 
         const now = new Date();
         const dateStr = now.toLocaleDateString();
         const timeStr = now.toLocaleTimeString();
 
-        // Fill the hidden capture card (matches original page text format exactly)
-        document.getElementById('cc-name').textContent = `Staff Name: ${name}`;
-        document.getElementById('cc-type').textContent = `Type: ${recordType}`;
+        // Fill the hidden capture card (Date/Time + Location only, matches original page exactly)
         document.getElementById('cc-datetime').textContent = `Date: ${dateStr} | Time: ${timeStr}`;
         document.getElementById('cc-location').textContent = `Location: ${currentAddress}`;
-
-        // Fire-and-forget log to Google Sheet
-        logToSheet({
-            name: name,
-            type: recordType,
-            date: dateStr,
-            time: timeStr,
-            address: currentAddress,
-            lat: currentLat,
-            lon: currentLon
-        });
 
         try {
             const canvas = await html2canvas(document.getElementById('captureCard'), {
@@ -332,7 +333,7 @@
             });
 
             canvas.toBlob(async (blob) => {
-                const fileName = `MIC-${recordType.replace(' ', '')}-${name.split(' ')[0]}-${Date.now()}.png`;
+                const fileName = `MIC-Attendance-${Date.now()}.png`;
                 const file = new File([blob], fileName, { type: 'image/png' });
 
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -360,6 +361,48 @@
             statusEl.textContent = "Something went wrong generating the image. Please try again.";
             submitBtn.disabled = false;
         }
+    });
+
+    // Second button: submits the hidden Staff Name + Type record to the Google Sheet log
+    document.getElementById('submitRecordBtn').addEventListener('click', async () => {
+        const name = document.getElementById('staffName').value;
+        const statusEl = document.getElementById('status');
+
+        if (!name) {
+            statusEl.textContent = "Please select your name first.";
+            return;
+        }
+        if (currentLat === null) {
+            statusEl.textContent = "Still fetching your location — please wait a moment and try again.";
+            return;
+        }
+
+        const recordBtn = document.getElementById('submitRecordBtn');
+        recordBtn.disabled = true;
+        statusEl.textContent = "Submitting your record...";
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString();
+        const timeStr = now.toLocaleTimeString();
+
+        const result = await logToSheet({
+            name: name,
+            type: recordType,
+            date: dateStr,
+            time: timeStr,
+            address: currentAddress,
+            lat: currentLat,
+            lon: currentLon
+        });
+
+        if (result.ok) {
+            statusEl.textContent = `Record submitted: ${name} - ${recordType}.`;
+        } else if (result.reason === "not_configured") {
+            statusEl.textContent = "Record not saved — the Sheet log isn't set up yet.";
+        } else {
+            statusEl.textContent = "Something went wrong submitting your record. Please try again.";
+        }
+        recordBtn.disabled = false;
     });
 
     // Register service worker for installability/offline shell
