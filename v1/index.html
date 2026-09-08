@@ -106,46 +106,41 @@
         min-height: 20px;
     }
 
-    /* Off-screen capture card: full phone-screen canvas, plain classic style */
+    /* Off-screen capture card: matches the original mic-timein-timeout page exactly */
     #captureCard {
         position: fixed;
         top: -9999px;
         left: -9999px;
         width: 390px;
         height: 844px;
-        background: #ffffff;
+        background: #f9f9f9;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        align-items: center;
         padding: 26px;
         font-family: Arial, sans-serif;
     }
     #captureCard h1 {
-        font-size: 26px;
-        color: var(--brand-green);
-        margin: 0 0 24px;
+        font-size: 32px;
+        color: #4CAF50;
+        margin: 0 0 20px;
     }
-    #captureCard .cc-row {
-        margin-bottom: 20px;
+    #captureCard .cc-box {
+        font-size: 20px;
+        color: #333;
+        margin-top: 10px;
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        width: 80%;
+        max-width: 400px;
+        word-wrap: break-word;
         text-align: center;
     }
-    #captureCard .cc-row:last-child {
-        margin-bottom: 0;
-    }
-    #captureCard .cc-row label {
-        display: block;
-        font-size: 12px;
-        text-transform: uppercase;
-        color: #888;
-        letter-spacing: 0.04em;
-        margin-bottom: 6px;
-    }
-    #captureCard .cc-row .cc-value {
-        font-size: 18px;
-        color: #222;
-        font-weight: bold;
-        word-wrap: break-word;
-        line-height: 1.5;
+    #captureCard .cc-box + .cc-box {
+        margin-top: 20px;
     }
 </style>
 </head>
@@ -200,25 +195,13 @@
 <button id="submitBtn">Submit Attendance</button>
 <div id="status"></div>
 
-<!-- Hidden card rendered into the shared screenshot: full phone-screen canvas -->
+<!-- Hidden card rendered into the shared screenshot: matches the original page exactly -->
 <div id="captureCard">
     <h1>MIC Attendance</h1>
-    <div class="cc-row">
-        <label>Staff Name</label>
-        <div class="cc-value" id="cc-name">-</div>
-    </div>
-    <div class="cc-row">
-        <label id="cc-type-label">Type</label>
-        <div class="cc-value" id="cc-type">-</div>
-    </div>
-    <div class="cc-row">
-        <label>Date &amp; Time</label>
-        <div class="cc-value" id="cc-datetime">-</div>
-    </div>
-    <div class="cc-row">
-        <label>Location</label>
-        <div class="cc-value" id="cc-location" style="font-weight:normal; font-size:15px;">-</div>
-    </div>
+    <div class="cc-box" id="cc-name">Staff Name: -</div>
+    <div class="cc-box" id="cc-type">Type: -</div>
+    <div class="cc-box" id="cc-datetime">Date: - | Time: -</div>
+    <div class="cc-box" id="cc-location">Location: -</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -325,11 +308,11 @@
         const dateStr = now.toLocaleDateString();
         const timeStr = now.toLocaleTimeString();
 
-        // Fill the hidden capture card
-        document.getElementById('cc-name').textContent = name;
-        document.getElementById('cc-type').textContent = recordType;
-        document.getElementById('cc-datetime').textContent = `${dateStr} | ${timeStr}`;
-        document.getElementById('cc-location').textContent = currentAddress;
+        // Fill the hidden capture card (matches original page text format exactly)
+        document.getElementById('cc-name').textContent = `Staff Name: ${name}`;
+        document.getElementById('cc-type').textContent = `Type: ${recordType}`;
+        document.getElementById('cc-datetime').textContent = `Date: ${dateStr} | Time: ${timeStr}`;
+        document.getElementById('cc-location').textContent = `Location: ${currentAddress}`;
 
         // Fire-and-forget log to Google Sheet
         logToSheet({
@@ -344,7 +327,7 @@
 
         try {
             const canvas = await html2canvas(document.getElementById('captureCard'), {
-                backgroundColor: '#ffffff',
+                backgroundColor: '#f9f9f9',
                 scale: 2
             });
 
