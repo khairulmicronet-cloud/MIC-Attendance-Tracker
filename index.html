@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#475B76">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>MIC Attendance</title>
+<style>
+    :root {
+        --brand-blue: #475B76;
+        --brand-dark: #3D3D3B;
+        --bg: #f4f5f7;
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: var(--bg);
+        color: #222;
+        margin: 0;
+        padding: 20px 16px 40px;
+        min-height: 100vh;
+    }
+    #logo {
+        width: 90px;
+        margin-top: 10px;
+    }
+    h1 {
+        font-size: 24px;
+        color: var(--brand-blue);
+        margin: 12px 0 20px;
+    }
+    .card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        padding: 16px;
+        max-width: 420px;
+        margin: 0 auto 14px;
+        text-align: left;
+    }
+    .card label {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #888;
+        margin-bottom: 6px;
+    }
+    .card .value {
+        font-size: 17px;
+        color: #222;
+        word-wrap: break-word;
+    }
+    select#staffName {
+        width: 100%;
+        font-size: 16px;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background: #fff;
+    }
+    .toggle-row {
+        display: flex;
+        gap: 10px;
+        max-width: 420px;
+        margin: 0 auto 14px;
+    }
+    .toggle-btn {
+        flex: 1;
+        padding: 12px 0;
+        border-radius: 8px;
+        border: 2px solid var(--brand-blue);
+        background: #fff;
+        color: var(--brand-blue);
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .toggle-btn.active {
+        background: var(--brand-blue);
+        color: #fff;
+    }
+    #submitBtn {
+        width: 100%;
+        max-width: 420px;
+        padding: 15px;
+        font-size: 17px;
+        font-weight: bold;
+        color: #fff;
+        background: var(--brand-dark);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 6px;
+    }
+    #submitBtn:disabled {
+        opacity: 0.6;
+    }
+    #status {
+        margin-top: 14px;
+        font-size: 14px;
+        color: #555;
+        min-height: 20px;
+    }
+    #captureCard {
+        position: fixed;
+        top: -9999px;
+        left: -9999px;
+        width: 640px;
+        background: #ffffff;
+        padding: 32px;
+        font-family: Arial, sans-serif;
+    }
+    #captureCard .cc-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border-bottom: 3px solid var(--brand-blue);
+        padding-bottom: 16px;
+        margin-bottom: 20px;
+    }
+    #captureCard .cc-header img {
+        width: 60px;
+    }
+    #captureCard .cc-header h2 {
+        margin: 0;
+        color: var(--brand-blue);
+        font-size: 22px;
+    }
+    #captureCard .cc-header span {
+        color: var(--brand-dark);
+        font-size: 13px;
+    }
+    #captureCard .cc-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 20px;
+        background: var(--brand-blue);
+        color: #fff;
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+    #captureCard .cc-row {
+        margin-bottom: 14px;
+    }
+    #captureCard .cc-row label {
+        display: block;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #888;
+        letter-spacing: 0.04em;
+        margin-bottom: 3px;
+    }
+    #captureCard .cc-row .cc-value {
+        font-size: 18px;
+        color: #222;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<img id="logo" src="logo.png" alt="Micronet International College">
+<h1>MIC Attendance</h1>
+
+<div class="card">
+    <label>Staff Name</label>
+    <select id="staffName">
+        <option value="" disabled selected>Select your name</option>
+        <option>Sharon Chin</option>
+        <option>Crisanta Dionglay</option>
+        <option>Hajah Nur'Aqilah</option>
+        <option>Norain Hj Matussin</option>
+        <option>Maziyyah</option>
+        <option>Alisha Abdul Latip</option>
+        <option>Aslam Mohd Rajmi</option>
+        <option>Lyana Berawoh</option>
+        <option>Amal Rafidah Hj Hamzah</option>
+        <option>Sheraden Sanchez</option>
+        <option>Nurlizam Pungut/Ismail</option>
+        <option>Awangku Muhammad Khairul Amir Bin Pg Darma Putra</option>
+        <option>Dk Hjh Ummi</option>
+        <option>Veronica Anne Roddy</option>
+        <option>Md Hariz Mahyuddin</option>
+        <option>Nur Izzaty</option>
+        <option>Azimah Md Hishamuddin</option>
+        <option>Nurkhtamal Alinafiah</option>
+        <option>Nurzahidah Haji Sahari</option>
+        <option>Nur Amelea Batrisyia Suhaili</option>
+        <option>Muhammad Mustadim Hj Mohd Lias</option>
+    </select>
+</div>
+
+<div class="card">
+    <label>Date &amp; Time</label>
+    <div class="value" id="datetime">Loading date and time...</div>
+</div>
+
+<div class="card">
+    <label>Location</label>
+    <div class="value" id="location">Fetching location...</div>
+</div>
+
+<div class="toggle-row">
+    <button type="button" class="toggle-btn active" id="btnTimeIn">Time In</button>
+    <button type="button" class="toggle-btn" id="btnTimeOut">Time Out</button>
+</div>
+
+<button id="submitBtn">Submit Attendance</button>
+<div id="status"></div>
+
+<div id="captureCard">
+    <div class="cc-header">
+        <img src="logo.png" alt="Micronet">
+        <div>
+            <h2>MIC Attendance Record</h2>
+            <span>Micronet International College</span>
+        </div>
+    </div>
+    <div class="cc-badge" id="cc-type">TIME IN</div>
+    <div class="cc-row">
+        <label>Staff Name</label>
+        <div class="cc-value" id="cc-name">-</div>
+    </div>
+    <div class="cc-row">
+        <label>Date &amp; Time</label>
+        <div class="cc-value" id="cc-datetime">-</div>
+    </div>
+    <div class="cc-row">
+        <label>Location</label>
+        <div class="cc-value" id="cc-location" style="font-weight:normal; font-size:15px;">-</div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+    const APPS_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+
+    let currentLat = null, currentLon = null, currentAddress = "Fetching location...";
+    let recordType = "Time In";
+
+    function updateDateTime() {
+        const now = new Date();
+        document.getElementById('datetime').textContent =
+            `${now.toLocaleDateString()} | ${now.toLocaleTimeString()}`;
+    }
+
+    function showPosition(position) {
+        currentLat = position.coords.latitude;
+        currentLon = position.coords.longitude;
+
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLat}&lon=${currentLon}`)
+            .then(r => r.json())
+            .then(data => {
+                currentAddress = data.display_name || "Location name not available";
+                document.getElementById('location').textContent = currentAddress;
+            })
+            .catch(() => {
+                currentAddress = "Unable to fetch location name.";
+                document.getElementById('location').textContent = currentAddress;
+            });
+    }
+
+    function showError(error) {
+        const messages = {
+            1: "Location permission denied. Please enable location access.",
+            2: "Location information is unavailable.",
+            3: "The request to get your location timed out."
+        };
+        document.getElementById('location').textContent = messages[error.code] || "An unknown location error occurred.";
+    }
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError, {
+                enableHighAccuracy: true,
+                timeout: 15000
+            });
+        } else {
+            document.getElementById('location').textContent = "Geolocation is not supported by this browser.";
+        }
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+    getLocation();
+
+    const btnIn = document.getElementById('btnTimeIn');
+    const btnOut = document.getElementById('btnTimeOut');
+    btnIn.addEventListener('click', () => {
+        recordType = "Time In";
+        btnIn.classList.add('active');
+        btnOut.classList.remove('active');
+    });
+    btnOut.addEventListener('click', () => {
+        recordType = "Time Out";
+        btnOut.classList.add('active');
+        btnIn.classList.remove('active');
+    });
+
+    async function logToSheet(payload) {
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("PASTE_") === 0) return;
+        try {
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+        } catch (err) {
+            console.error('Sheet log failed:', err);
+        }
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+        const name = document.getElementById('staffName').value;
+        const statusEl = document.getElementById('status');
+
+        if (!name) {
+            statusEl.textContent = "Please select your name first.";
+            return;
+        }
+        if (currentLat === null) {
+            statusEl.textContent = "Still fetching your location — please wait a moment and try again.";
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        statusEl.textContent = "Preparing your submission...";
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString();
+        const timeStr = now.toLocaleTimeString();
+
+        document.getElementById('cc-type').textContent = recordType.toUpperCase();
+        document.getElementById('cc-name').textContent = name;
+        document.getElementById('cc-datetime').textContent = `${dateStr} | ${timeStr}`;
+        document.getElementById('cc-location').textContent = currentAddress;
+
+        logToSheet({
+            name: name,
+            type: recordType,
+            date: dateStr,
+            time: timeStr,
+            address: currentAddress,
+            lat: currentLat,
+            lon: currentLon
+        });
+
+        try {
+            const canvas = await html2canvas(document.getElementById('captureCard'), {
+                backgroundColor: '#ffffff',
+                scale: 2
+            });
+
+            canvas.toBlob(async (blob) => {
+                const fileName = `MIC-${recordType.replace(' ', '')}-${name.split(' ')[0]}-${Date.now()}.png`;
+                const file = new File([blob], fileName, { type: 'image/png' });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'MIC Attendance',
+                            text: `${recordType} - ${name} - ${dateStr} ${timeStr}`
+                        });
+                        statusEl.textContent = "Share sheet opened — pick \"MIC Punch in Record\" to send.";
+                    } catch (shareErr) {
+                        statusEl.textContent = "Share cancelled.";
+                    }
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.click();
+                    statusEl.textContent = "Image downloaded — please attach it manually to the \"MIC Punch in Record\" WhatsApp group.";
+                }
+                submitBtn.disabled = false;
+            }, 'image/png');
+        } catch (err) {
+            console.error(err);
+            statusEl.textContent = "Something went wrong generating the image. Please try again.";
+            submitBtn.disabled = false;
+        }
+    });
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        });
+    }
+</script>
+
+</body>
+</html>
