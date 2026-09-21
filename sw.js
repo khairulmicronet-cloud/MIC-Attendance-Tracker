@@ -1,4 +1,4 @@
-const CACHE_NAME = "mic-attendance-v1";
+const CACHE_NAME = "mic-attendance-v2";
 const APP_SHELL = [
       "./index.html",
       "./manifest.json",
