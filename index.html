@@ -414,10 +414,18 @@
         }
     });
 
-    // Register service worker for installability/offline shell
+    // Register service worker for installability/offline shell, and
+    // reload automatically once a newer version takes over so updates
+    // apply without needing to reinstall or clear the cache.
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js').catch(() => {});
+        });
+        let swReloaded = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (swReloaded) return;
+            swReloaded = true;
+            window.location.reload();
         });
     }
 </script>
